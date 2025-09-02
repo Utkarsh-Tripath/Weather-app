@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 450px;
+            padding: 25px;
+            text-align: center;
+        }
+        
+        .search-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .search-box input {
+            border: none;
+            outline: none;
+            background: #f1f1f1;
+            padding: 12px 20px;
+            border-radius: 30px;
+            flex: 1;
+            margin-right: 15px;
+            font-size: 16px;
+        }
+        
+        .search-box button {
+            border: none;
+            outline: none;
+            background: #6e8efb;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-size: 16px;
+        }
+        
+        .search-box button:hover {
+            background: #5a7df9;
+        }
+        
+        .weather-info {
+            display: none;
+        }
+        
+        .city-name {
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .date {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .temperature {
+            font-size: 60px;
+            font-weight: 700;
+            margin: 20px 0;
+            color: #333;
+        }
+        
+        .weather-type {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .weather-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+        
+        .humidity, .wind {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .humidity i, .wind i {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #6e8efb;
+        }
+        
+        .text {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .error {
+            color: #ff6b6b;
+            text-align: left;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        .credit {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="search-box">
+            <input type="text" placeholder="Enter city name" id="city-input">
+            <button id="search-btn">Search</button>
+        </div>
+        <div class="error" id="error-message">Please enter a valid city name</div>
+        
+        <div class="weather-info" id="weather-info">
+            <h1 class="city-name" id="city-name">New York</h1>
+            <p class="date" id="date">Monday, January 1, 2023</p>
+            <div class="temperature" id="temperature">25°C</div>
+            <div class="weather-type" id="weather-type">Sunny</div>
+            
+            <div class="weather-details">
+                <div class="humidity">
+                    <i>💧</i>
+                    <span class="value" id="humidity">60%</span>
+                    <span class="text">Humidity</span>
+                </div>
+                <div class="wind">
+                    <i>💨</i>
+                    <span class="value" id="wind-speed">5 km/h</span>
+                    <span class="text">Wind Speed</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="credit">
+            <p>This is a demo weather app. Data is simulated for demonstration purposes.</p>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const cityInput = document.getElementById('city-input');
+        const searchBtn = document.getElementById('search-btn');
+        const errorMessage = document.getElementById('error-message');
+        const weatherInfo = document.getElementById('weather-info');
+        const cityName = document.getElementById('city-name');
+        const dateElement = document.getElementById('date');
+        const temperature = document.getElementById('temperature');
+        const weatherType = document.getElementById('weather-type');
+        const humidity = document.getElementById('humidity');
+        const windSpeed = document.getElementById('wind-speed');
+        
+        // Update date
+        function updateDate() {
+            const now = new Date();
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            dateElement.textContent = now.toLocaleDateString('en-US', options);
+        }
+        
+        // Generate random weather data for demo purposes
+        function generateWeatherData(city) {
+            // Simulate API delay
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    const weatherTypes = ['Sunny', 'Cloudy', 'Rainy', 'Snowy', 'Partly Cloudy'];
+                    const randomWeather = weatherTypes[Math.floor(Math.random() * weatherTypes.length)];
+                    
+                    const data = {
+                        name: city,
+                        main: {
+                            temp: Math.floor(Math.random() * 35) + 5, // Temperature between 5-40°C
+                            humidity: Math.floor(Math.random() * 80) + 20 // Humidity between 20-100%
+                        },
+                        weather: [{ main: randomWeather }],
+                        wind: {
+                            speed: Math.floor(Math.random() * 20) + 1 // Wind speed between 1-20 km/h
+                        }
+                    };
+                    
+                    resolve(data);
+                }, 800); // Simulate network delay
+            });
+        }
+        
+        // Update weather UI
+        function updateWeatherUI(data) {
+            cityName.textContent = data.name;
+            temperature.textContent = `${data.main.temp}°C`;
+            weatherType.textContent = data.weather[0].main;
+            humidity.textContent = `${data.main.humidity}%`;
+            windSpeed.textContent = `${data.wind.speed} km/h`;
+            
+            weatherInfo.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+        
+        // Handle search
+        function handleSearch() {
+            const city = cityInput.value.trim();
+            
+            if (city === '') {
+                errorMessage.style.display = 'block';
+                weatherInfo.style.display = 'none';
+                return;
+            }
+            
+            // In a real app, you would fetch from a weather API
+            // For this demo, we'll generate random data
+            generateWeatherData(city)
+                .then(data => {
+                    updateWeatherUI(data);
+                })
+                .catch(error => {
+                    errorMessage.style.display = 'block';
+                    weatherInfo.style.display = 'none';
+                });
+        }
+        
+        // Event listeners
+        searchBtn.addEventListener('click', handleSearch);
+        
+        cityInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                handleSearch();
+            }
+        });
+        
+        // Initialize
+        updateDate();
+        
+        // Show demo data on load
+        generateWeatherData('London')
+            .then(data => {
+                updateWeatherUI(data);
+            });
+    </script>
+</body>
+</html>
